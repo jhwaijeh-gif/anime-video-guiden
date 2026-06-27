@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Så gjorde jag den svenska anime-videon — hela arbetsflödet | @joudgor</title>
+<meta name="description" content="Hela arbetsflödet bakom den svenska anime-fotbollsvideon. ChatGPT för karaktärsblad, Higgsfield (Seedance 2.0) för videon, valfri editor för att klippa ihop. Med de exakta prompterna och klippen de gav. På svenska.">
+<meta property="og:title" content="Så gjorde jag den svenska anime-videon">
+<meta property="og:description" content="Hela arbetsflödet, de exakta prompterna och klippen de gav. ChatGPT + Higgsfield (Seedance 2.0).">
+<meta property="og:image" content="poster-10.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F6F3;
+    --bg-alt:#FBFBFA;
+    --surface:#FFFFFF;
+    --border:#EAEAEA;
+    --border-soft:rgba(0,0,0,0.06);
+    --ink:#1F1D1B;
+    --text:#3D3A36;
+    --muted:#787774;
+    --cta:#141210;
+    --red-bg:#FDEBEC; --red-tx:#9F2F2D;
+    --blue-bg:#E1F3FE; --blue-tx:#1F6C9F;
+    --green-bg:#EDF3EC; --green-tx:#346538;
+    --yellow-bg:#FBF3DB; --yellow-tx:#956400;
+    --cloth-bg:#FBECE1; --cloth-tx:#B4481F;
+    --logo:'Syne','Manrope',sans-serif;
+    --serif:'Playfair Display',Georgia,serif;
+    --sans:'Manrope','Helvetica Neue',system-ui,-apple-system,sans-serif;
+    --mono:'JetBrains Mono','SF Mono',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;background:var(--bg);}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    font-weight:400;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  .wrap{max-width:1060px;margin:0 auto;padding:0 32px;}
+  .narrow{max-width:780px;}
+
+  .ambient{position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(620px 420px at 78% -6%, rgba(173,140,90,0.05), rgba(173,140,90,0) 70%);}
+  .page{position:relative;z-index:1;}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:50;
+    background:rgba(247,246,243,0.72);backdrop-filter:saturate(150%) blur(12px);
+    border-bottom:1px solid var(--border);}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px;}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;transition:opacity .2s ease;}
+  .brand:hover{opacity:.65;}
+  .brand .mk{width:26px;height:26px;border-radius:7px;background:#1A6BFF;
+    display:flex;align-items:center;justify-content:center;}
+  .brand .mk span{color:#fff;font-family:var(--logo);font-weight:800;font-size:15px;line-height:1;}
+  .brand b{font-family:var(--logo);font-weight:800;font-size:17px;color:var(--ink);letter-spacing:-0.01em;}
+  nav .handle{font-family:var(--mono);font-weight:500;font-size:12.5px;color:var(--muted);letter-spacing:0.02em;}
+
+  /* HERO */
+  header.hero{padding:96px 0 36px;}
+  .eyebrow{font-family:var(--mono);font-weight:600;font-size:12px;letter-spacing:0.16em;
+    text-transform:uppercase;color:var(--muted);}
+  h1{font-family:var(--serif);font-weight:600;color:var(--ink);
+    font-size:clamp(38px,6vw,66px);line-height:1.04;letter-spacing:-0.03em;margin:22px 0 0;}
+  h1 em{font-style:italic;font-weight:500;color:var(--cloth-tx);}
+  .lede{font-size:19px;line-height:1.65;color:var(--text);margin-top:26px;max-width:680px;}
+  .lede b{color:var(--ink);font-weight:600;}
+
+  .hero-still{margin-top:44px;border-radius:16px;overflow:hidden;border:1px solid var(--border);
+    position:relative;background:#0d0d0f;}
+  .hero-still .cap{position:absolute;left:16px;bottom:14px;font-family:var(--mono);font-size:11px;
+    letter-spacing:0.04em;color:rgba(255,255,255,0.86);background:rgba(0,0,0,0.42);
+    backdrop-filter:blur(4px);padding:6px 12px;border-radius:9999px;z-index:2;}
+
+  /* VIDEO BLOCK (reusable) */
+  .vid{position:relative;background:#0d0d0f;aspect-ratio:16/9;overflow:hidden;}
+  .vid video{width:100%;height:100%;display:block;object-fit:cover;}
+  .vph{position:absolute;inset:0;display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;
+    color:#6c6873;font-family:var(--mono);font-size:12px;letter-spacing:0.05em;text-align:center;padding:18px;}
+  .vph svg{width:26px;height:26px;opacity:.5;}
+
+  /* SECTION SHELL */
+  section{padding:72px 0;}
+  .sec-head{margin-bottom:34px;}
+  h2{font-family:var(--serif);font-weight:600;color:var(--ink);
+    font-size:clamp(27px,3.5vw,38px);line-height:1.1;letter-spacing:-0.02em;}
+  .sec-sub{color:var(--muted);font-size:16px;margin-top:10px;max-width:640px;}
+
+  /* TOOLS */
+  .tools{display:flex;flex-wrap:wrap;gap:10px;}
+  .tool{display:flex;align-items:center;gap:11px;background:var(--surface);
+    border:1px solid var(--border);border-radius:9999px;padding:8px 18px 8px 8px;}
+  .tool .b{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    font-family:var(--logo);font-weight:800;font-size:11px;color:#fff;letter-spacing:0.01em;}
+  .tool .nm{font-weight:600;font-size:14.5px;color:var(--ink);}
+  .fmt{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;}
+  .fmt span{font-family:var(--mono);font-weight:600;font-size:11px;letter-spacing:0.04em;
+    color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:9999px;padding:6px 13px;}
+
+  /* STYLE BLOCK FEATURE */
+  .feat{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:34px;
+    border-top:3px solid var(--cloth-tx);}
+  .feat .ftag{display:inline-block;font-family:var(--mono);font-weight:600;font-size:10.5px;
+    letter-spacing:0.08em;text-transform:uppercase;padding:5px 11px;border-radius:9999px;
+    background:var(--cloth-bg);color:var(--cloth-tx);}
+  .feat h3{font-family:var(--serif);font-weight:600;font-size:25px;color:var(--ink);margin:15px 0 8px;}
+  .feat p{font-size:15.5px;color:var(--text);line-height:1.62;max-width:660px;}
+
+  /* FORMULA */
+  .formula{margin-top:22px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
+  .formula .ftok{font-family:var(--mono);font-weight:600;font-size:12.5px;color:var(--ink);
+    background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:9px 13px;}
+  .formula .ftok.hl{background:var(--cloth-bg);border-color:transparent;color:var(--cloth-tx);}
+  .formula .plus{font-family:var(--mono);font-weight:600;font-size:13px;color:var(--muted);}
+
+  /* PHASES */
+  .phase{border-top:1px solid var(--border);padding-top:50px;margin-top:60px;}
+  .phase:first-of-type{border-top:0;padding-top:0;margin-top:0;}
+  .p-eyebrow{font-family:var(--mono);font-weight:600;font-size:12.5px;letter-spacing:0.08em;
+    text-transform:uppercase;color:var(--ac-tx);}
+  .phase h2{margin-top:12px;}
+  .p-sub{color:var(--muted);font-size:16.5px;margin-top:10px;max-width:660px;}
+  .steps{margin-top:30px;}
+  .step{display:grid;grid-template-columns:40px 1fr;gap:18px;padding:26px 0;border-top:1px solid var(--border);}
+  .step:first-child{border-top:0;padding-top:6px;}
+  .step-n{width:34px;height:34px;border-radius:9999px;display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-weight:600;font-size:14px;background:var(--ac-bg);color:var(--ac-tx);}
+  .step h4{font-family:var(--serif);font-weight:600;font-size:20px;color:var(--ink);
+    letter-spacing:-0.01em;margin-bottom:7px;line-height:1.25;}
+  .step p{font-size:15.5px;color:var(--text);line-height:1.62;}
+  .step p b{color:var(--ink);font-weight:600;}
+  .step p+p{margin-top:10px;}
+  .chip-tool{display:inline-flex;align-items:center;gap:7px;margin-top:14px;font-family:var(--mono);
+    font-weight:600;font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;
+    color:var(--ac-tx);background:var(--ac-bg);border-radius:9999px;padding:6px 13px;}
+  .note{margin-top:16px;font-size:14.5px;color:var(--text);line-height:1.55;
+    background:var(--yellow-bg);border:1px solid rgba(149,100,0,0.14);border-radius:10px;
+    padding:13px 16px;display:flex;gap:11px;}
+  .note .lb{flex:0 0 auto;color:var(--yellow-tx);}
+  .note .lb svg{width:18px;height:18px;display:block;}
+  .note b{color:var(--yellow-tx);font-weight:600;}
+  .note.red{background:var(--red-bg);border-color:rgba(159,47,45,0.16);}
+  .note.red .lb{color:var(--red-tx);}
+  .note.red b{color:var(--red-tx);}
+
+  /* WORKED EXAMPLE (inputs -> output) */
+  .ex{margin-top:18px;}
+  .exrow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .exin{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface);}
+  .exin img{width:100%;display:block;aspect-ratio:3/4;object-fit:cover;background:#0d0d0f;}
+  .exin .excap{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:0.05em;padding:9px 12px;}
+  .exarrow{display:flex;align-items:center;justify-content:center;gap:9px;margin:14px 0;
+    font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);}
+  .exarrow svg{width:18px;height:18px;}
+  .exout{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface);}
+  .exout img{width:100%;display:block;background:#0d0d0f;}
+  .exout .excap{font-family:var(--mono);font-size:10.5px;color:var(--cloth-tx);text-transform:uppercase;
+    letter-spacing:0.05em;padding:9px 12px;background:var(--cloth-bg);}
+
+  /* SHEET GALLERY */
+  .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px;}
+  .gcard{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface);}
+  .gcard img{width:100%;display:block;aspect-ratio:1/1;object-fit:cover;background:#0d0d0f;}
+  .gcard .gname{font-family:var(--mono);font-weight:600;font-size:11px;color:var(--ink);
+    padding:9px 12px;letter-spacing:0.03em;}
+
+  /* PROMPT BOX */
+  .prompt{margin-top:18px;border:1px solid #2a2926;border-radius:12px;overflow:hidden;background:#1b1a18;}
+  .prompt-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:11px 14px;background:#232220;border-bottom:1px solid rgba(255,255,255,0.06);}
+  .prompt-bar .lbl{font-family:var(--mono);font-weight:600;font-size:11px;letter-spacing:0.09em;
+    text-transform:uppercase;color:#c9c5bf;}
+  .prompt-copy{font-family:var(--mono);font-weight:600;font-size:11px;color:#e9e6e1;
+    background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);border-radius:7px;
+    padding:6px 12px;cursor:pointer;transition:background .2s ease;flex:0 0 auto;}
+  .prompt-copy:hover{background:rgba(255,255,255,0.18);}
+  .prompt-copy.ok{color:#9fe0a6;border-color:rgba(159,224,166,0.4);}
+  .prompt pre{margin:0;padding:18px;overflow:auto;max-height:240px;font-family:var(--mono);font-size:12.5px;
+    line-height:1.7;color:#e7e4df;white-space:pre-wrap;word-break:break-word;}
+
+  /* SHOWCASE */
+  .shows{display:grid;grid-template-columns:1fr;gap:24px;}
+  .show{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;
+    transition:box-shadow .2s ease;}
+  .show:hover{box-shadow:0 2px 14px rgba(0,0,0,0.05);}
+  .show .show-body{padding:22px 24px 24px;}
+  .show .show-tag{display:inline-block;font-family:var(--mono);font-weight:600;font-size:10.5px;
+    letter-spacing:0.08em;text-transform:uppercase;padding:5px 11px;border-radius:9999px;
+    background:var(--ac-bg);color:var(--ac-tx);}
+  .show h4{font-family:var(--serif);font-weight:600;font-size:21px;color:var(--ink);margin:13px 0 5px;}
+  .show .show-sub{font-size:14.5px;color:var(--muted);line-height:1.5;}
+  .show .prompt{margin-top:16px;}
+  .show .prompt-bar .lbl{font-size:10px;}
+
+  /* TIPS */
+  .tips{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  .tipcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:26px;
+    transition:box-shadow .2s ease,transform .2s ease;}
+  .tipcard:hover{box-shadow:0 2px 12px rgba(0,0,0,0.05);transform:translateY(-2px);}
+  .tipcard .ti{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+  .tipcard .ti svg{width:20px;height:20px;}
+  .tipcard h3{font-family:var(--serif);font-weight:600;font-size:20px;color:var(--ink);
+    letter-spacing:-0.01em;margin-bottom:8px;line-height:1.2;}
+  .tipcard p{font-size:14.5px;color:var(--text);line-height:1.58;}
+  .tipcard p b{color:var(--ink);font-weight:600;}
+
+  /* GLANCE / CHAIN */
+  .lane{margin-top:10px;}
+  .chain2{display:flex;align-items:stretch;gap:9px;}
+  .node{flex:1;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:11px;
+    padding:15px 14px;display:flex;flex-direction:column;gap:7px;justify-content:flex-start;}
+  .node .ni{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+    font-family:var(--logo);font-weight:800;font-size:10px;color:#fff;background:var(--muted);}
+  .node .ni svg{width:14px;height:14px;}
+  .node .nt{font-size:13px;font-weight:600;color:var(--ink);line-height:1.35;}
+  .node.done{background:var(--green-bg);border-color:transparent;}
+  .node.done .ni{background:var(--green-tx);}
+  .node.done .nt{color:var(--green-tx);}
+  .arrow{display:flex;align-items:center;justify-content:center;color:var(--muted);flex:0 0 auto;}
+  .arrow svg{width:18px;height:18px;}
+
+  /* CTA */
+  .cta{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+    padding:56px 48px;text-align:center;}
+  .cta h2{font-size:clamp(25px,3.3vw,35px);}
+  .cta p{color:var(--muted);font-size:16px;margin:14px auto 0;max-width:460px;}
+  .btn{display:inline-block;margin-top:28px;background:var(--cta);color:#fff;text-decoration:none;
+    font-family:var(--sans);font-weight:600;font-size:15px;padding:14px 26px;border-radius:6px;
+    transition:background .2s ease,transform .12s ease;}
+  .btn:hover{background:#332e29;}
+  .btn:active{transform:scale(0.98);}
+
+  /* FOOTER */
+  footer{border-top:1px solid var(--border);padding:34px 0 56px;margin-top:80px;}
+  footer .wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  footer .h{font-family:var(--mono);font-weight:600;font-size:13px;color:var(--ink);letter-spacing:0.02em;}
+  footer .p{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:0.04em;}
+
+  /* MOTION */
+  .reveal{opacity:0;transform:translateY(12px);}
+  .reveal.in{opacity:1;transform:none;transition:opacity .6s cubic-bezier(0.16,1,0.3,1),transform .6s cubic-bezier(0.16,1,0.3,1);}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;}}
+
+  @media(max-width:820px){
+    .tips,.gallery{grid-template-columns:1fr;}
+    .gallery{grid-template-columns:repeat(2,1fr);}
+    .wrap{padding:0 22px;}
+    section{padding:56px 0;}
+    header.hero{padding:64px 0 24px;}
+    .cta{padding:40px 24px;}
+    .feat{padding:26px 22px;}
+    .chain2{flex-direction:column;}
+    .arrow svg{transform:rotate(90deg);}
+  }
+</style>
+</head>
+<body>
+<div class="ambient"></div>
+<div class="page">
+
+  <nav>
+    <div class="wrap">
+      <a class="brand" href="https://ikapp.ai" target="_blank" rel="noopener">
+        <div class="mk"><span>I</span></div>
+        <b>Ikapp</b>
+      </a>
+      <div class="handle">@joudgor</div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap">
+      <div class="eyebrow reveal">Anime Video-workflow · 2026</div>
+      <h1 class="reveal">Så gjorde jag den <em>svenska anime-videon</em></h1>
+      <p class="lede reveal">Riktiga spelare blir anime-karaktärer, auran exploderar bakom dem i målögonblicket, allt i 16:9 med snabba klipp. Här är hela arbetsflödet jag faktiskt använde: <b>ChatGPT</b> för karaktärsblad, <b>Higgsfield (Seedance 2.0)</b> för videon, valfri editor för att klippa ihop. Med de exakta prompterna och klippen de gav.</p>
+      <div class="hero-still reveal">
+        <div class="cap">Hjälteskottet · Elanga avgör</div>
+        <div class="vid">
+          <video src="clip-10-elanga-scores.mp4" poster="poster-10.jpg" muted loop playsinline autoplay preload="metadata"></video>
+          <div class="vph" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5zM1 5h15v14H1z"/></svg>
+            Klippet läggs in här
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOOLS -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2>Verktyg du behöver</h2>
+        <div class="sec-sub">Tre verktyg. Ett för karaktärerna, ett för videon, ett för att klippa ihop.</div>
+      </div>
+      <div class="tools reveal">
+        <div class="tool"><div class="b" style="background:#10A37F">GPT</div><span class="nm">ChatGPT (karaktärsblad)</span></div>
+        <div class="tool"><div class="b" style="background:#111111">H</div><span class="nm">Higgsfield · Seedance 2.0 (video)</span></div>
+        <div class="tool"><div class="b" style="background:#111111">CC</div><span class="nm">CapCut (eller valfri editor)</span></div>
+      </div>
+      <div class="fmt reveal">
+        <span>Horisontell 16:9 widescreen</span>
+        <span>Anime-stil</span>
+        <span>Snabba klipp</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- STYLE BLOCK FEATURE -->
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="feat reveal">
+        <span class="ftag">Hjärtat i hela grejen</span>
+        <h3>Stilblocket</h3>
+        <p>Det här blocket börjar <b>varje</b> prompt. Det är det som gör att klippen ser ut som riktig anime och inte som generisk AI. Klistra in det överst, lägg sen till din scen efter det.</p>
+        <div class="prompt">
+          <div class="prompt-bar"><span class="lbl">Stilblock · engelska, kopiera precis som det är</span><button class="prompt-copy" type="button">Kopiera</button></div>
+          <pre>Classic anime cel-shading: flat saturated base colors with one hard shadow layer and one deeper shadow, crisp clean highlights, NO soft airbrushing, NO realistic rendering. Warm orange-brown skin tones, flat bold jersey colors, hair with sharp reflective highlights. Strong high-contrast cinematic lighting, bright rim light, cool blue highlights mixed with warm light, small bloom and soft glow, specular highlights. Highly expressive face: detailed eyes with bright catchlights and subtle iris gradients, thick eyebrows, intense exaggerated expression, crisp sharp line art. Modern sports anime, Blue Lock aesthetic, 8k, anime masterpiece frame.</pre>
+        </div>
+        <div class="note" style="margin-top:16px"><span class="lb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg></span><span><b>Litet knep:</b> på närbilder av en spelare, behåll raden "Highly expressive face...". På vidbilder och rena actionklipp (avspark, mål på avstånd) kan du ta bort den raden. Du ser skillnaden i klippen längre ner.</span></div>
+        <p style="margin-top:24px"><b>Formeln för resten av prompten</b> — efter stilblocket bygger du alltid så här:</p>
+        <div class="formula">
+          <span class="ftok hl">Stilblocket</span>
+          <span class="plus">+</span>
+          <span class="ftok">vem (neutral tagg + nummer)</span>
+          <span class="plus">+</span>
+          <span class="ftok">en enkel handling</span>
+          <span class="plus">+</span>
+          <span class="ftok">en aura</span>
+          <span class="plus">+</span>
+          <span class="ftok">en kameraåkning</span>
+          <span class="plus">+</span>
+          <span class="ftok">Horizontal 16:9 widescreen</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PHASES -->
+  <section class="wrap narrow" style="padding-top:8px;margin:0 auto;">
+
+    <!-- PHASE 01 -->
+    <div class="phase reveal" style="--ac-bg:var(--blue-bg);--ac-tx:var(--blue-tx)">
+      <div class="p-eyebrow">Fas 01</div>
+      <h2>Karaktärer och referenser</h2>
+      <div class="p-sub">Innan du rör videon: gör om varje spelare till en anime-karaktär och förbered referensbilderna rätt.</div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-n">1</div>
+          <div>
+            <h4>Välj dina spelare och ta en referensbild på var och en</h4>
+            <p>En tydlig bild på den riktiga personen räcker. Till själva karaktärsbladet funkar det till och med med bara namnet, men en bild ger bättre likhet.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-n">2</div>
+          <div>
+            <h4>Generera ett anime-karaktärsblad i ChatGPT</h4>
+            <p>Ett blad per spelare. Byt ut namnet för varje. Här är exakt hur jag gjorde Elanga: jag matade in <b>två skärmdumpar</b> av honom (helkropp och ansikte) och bad ChatGPT om ett blad.</p>
+            <span class="chip-tool">ChatGPT</span>
+
+            <div class="ex">
+              <div class="exrow">
+                <div class="exin">
+                  <img src="ref-input-fullbody.png" alt="Inmatad helkroppsbild av Elanga" loading="lazy">
+                  <div class="excap">Input · helkropp</div>
+                </div>
+                <div class="exin">
+                  <img src="ref-input-face.png" alt="Inmatad ansiktsbild av Elanga" loading="lazy">
+                  <div class="excap">Input · ansikte</div>
+                </div>
+              </div>
+              <div class="prompt">
+                <div class="prompt-bar"><span class="lbl">Prompt · byt ut [NAME]</span><button class="prompt-copy" type="button">Kopiera</button></div>
+                <pre>Create a character sheet of this Swedish player called [NAME], with close-ups and full-body shots from different angles, in Japanese anime style.</pre>
+              </div>
+              <div class="exarrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+                ChatGPT gav tillbaka
+              </div>
+              <div class="exout">
+                <img src="sheet-elanga.jpg" alt="Anime-karaktärsblad på Elanga" loading="lazy">
+                <div class="excap">Output · karaktärsbladet</div>
+              </div>
+            </div>
+
+            <p style="margin-top:22px">Så här ser hela laget ut när varje spelare körts genom samma steg (plus en gruppbild):</p>
+            <div class="gallery">
+              <div class="gcard"><img src="sheet-elanga.jpg" alt="Elanga anime-blad" loading="lazy"><div class="gname">Elanga · #11</div></div>
+              <div class="gcard"><img src="sheet-isak.jpg" alt="Isak anime-blad" loading="lazy"><div class="gname">Isak · #9</div></div>
+              <div class="gcard"><img src="sheet-gyokeres.jpg" alt="Gyökeres anime-blad" loading="lazy"><div class="gname">Gyökeres</div></div>
+              <div class="gcard"><img src="sheet-lindelof.jpg" alt="Lindelöf anime-blad" loading="lazy"><div class="gname">Lindelöf · #3</div></div>
+              <div class="gcard"><img src="sheet-yasin.jpg" alt="Yasin anime-blad" loading="lazy"><div class="gname">Yasin</div></div>
+              <div class="gcard"><img src="sheet-team.jpg" alt="Gruppbild på laget i anime-stil" loading="lazy"><div class="gname">Hela laget</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-n">3</div>
+          <div>
+            <h4>Beskär en ren panel från varje blad</h4>
+            <p>Mata <b>inte</b> in hela det röriga bladet som referens, rutnätet förvirrar modellen. Beskär ut <b>en ren helkroppsfigur rakt framifrån</b> (behåll gärna även en tydlig ansiktsbeskärning) och spara den som en egen bild. Den bär både ansiktet och kroppsproportionerna.</p>
+            <div class="note"><span class="lb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg></span><span>En ren figur slår alltid ett helt blad. Modellen ska se en person, inte ett collage.</span></div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-n">4</div>
+          <div>
+            <h4>Döp varje referens till ett neutralt namn</h4>
+            <p>Riktiga fotbollsnamn kan få videoprompten <b>nekad</b> (filtret för offentliga personer). När du laddar in en referens i Higgsfield, döp den till något neutralt som <b>swe9</b>, <b>swe11</b>, <b>swe17</b> (tröjnummer), inte "Elanga".</p>
+            <p>I prompten beskriver du spelaren med tröja plus nummer och taggar den neutrala handlen (eller bara <b>@image1</b>, <b>@image2</b> för generiska platser). Ansiktet låses ändå från bilden, namnet var aldrig det som bar likheten. Du ser de här taggarna i prompterna längre ner.</p>
+            <div class="note red"><span class="lb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><span>Använd tröjnummer som handtag, inte spelarnamn, så slipper du att prompten blockeras.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 02 -->
+    <div class="phase reveal" style="--ac-bg:var(--cloth-bg);--ac-tx:var(--cloth-tx)">
+      <div class="p-eyebrow">Fas 02</div>
+      <h2>Generera i Higgsfield (Seedance 2.0)</h2>
+      <div class="p-sub">Nu bygger du klippen. Stilblock plus scen, rätt bild i rätt slot, två-tre tagningar per beat.</div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-n">1</div>
+          <div>
+            <h4>De flesta klipp: text-till-video direkt</h4>
+            <p>Ladda in referensen (taggad med det neutrala handtaget) och kör text-till-video. <b>Ansiktslösa klipp</b> (avspark, bollen i nätet) behöver <b>ingen referens alls</b>, ren text-till-video räcker.</p>
+            <span class="chip-tool">Higgsfield · Seedance 2.0</span>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-n">2</div>
+          <div>
+            <h4>För en stor kamerareveal: börja från en bredbild</h4>
+            <p>En kamera kan inte krana ut från en tight närbild och hitta på ett helt stadion (då hamnar spelartunneln mitt på planen). Generera en <b>bred bild först</b> som redan har hela geografin, och animera sen den.</p>
+            <div class="note red"><span class="lb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><span>Start-frame vs referens-slot: animerar du en scenbild, lägg den i <b>start-frame-sloten</b>, inte referens-sloten. Sloten står som standard på "referens", vilket får modellen att hitta på en ny scen. Referens-slot = bara identitet och ansikten.</span></div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-n">3</div>
+          <div>
+            <h4>Inställningar</h4>
+            <p>16:9. <b>~5 sek för enkla beats, 6-8 sek för revealer och firande med flera spelare.</b> Baka in "natural proportions, no warping" i prompten. Generera <b>2-3 tagningar</b> och behåll den renaste. Seedance gav bäst resultat här (Kling var sämre).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 03 -->
+    <div class="phase reveal" style="--ac-bg:var(--green-bg);--ac-tx:var(--green-tx)">
+      <div class="p-eyebrow">Fas 03</div>
+      <h2>Lägg på detaljerna och sätt ihop</h2>
+      <div class="p-sub">Klippen är klara. Nu blir det en video.</div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-n">1</div>
+          <div>
+            <h4>Lägg på anime-detaljerna (valfritt)</h4>
+            <p>Namnplattor på ögonblixten, en talad replik eller undertext. Seedance gör <b>inget ljud</b>, så lägg till röst (t.ex. ElevenLabs) och ljudeffekter i redigeringen.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-n">2</div>
+          <div>
+            <h4>Klipp ihop allt</h4>
+            <p>Använd valfri editor (jag använde CapCut, men vad som helst funkar, du lägger bara klippen i rätt ordning). Lägg dem i berättelseordning, lägg på ett trendande hype-ljud, klipp på beaten, lägg in din text och exportera. Klart.</p>
+            <span class="chip-tool">CapCut · valfri editor</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- SHOWCASE -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2>Prompt → vad den gav</h2>
+        <div class="sec-sub">Varje klipp i berättelseordning, med den exakta prompten som gjorde det. Stilblocket sitter överst i alla, scroll i rutan för att läsa hela.</div>
+      </div>
+
+      <div class="shows">
+
+        <!-- 01 -->
+        <div class="show reveal" style="--ac-bg:var(--blue-bg);--ac-tx:var(--blue-tx)">
+          <div class="vid"><video src="clip-01-tunnel.mp4" poster="poster-01.jpg" muted loop playsinline preload="none"></video><div class="vph" style="display:none">Klipp 01</div></div>
+          <div class="show-body">
+            <span class="show-tag">Klipp 01 · Intro</span>
+            <h4>Laget kommer ut ur tunneln</h4>
+            <div class="show-sub">Bred establering. Kort stilblock utan ansiktsraden, eftersom det är en vidvinkel utan närbild.</div>
+            <div class="prompt"><div class="prompt-bar"><span class="lbl">Prompt</span><button class="prompt-copy" type="button">Kopiera</button></div><pre>Classic anime cel-shading: flat saturated base colors with one hard shadow layer and one deeper shadow, crisp clean highlights, NO soft airbrushing, NO realistic rendering. Warm orange-brown skin tones, flat bold jersey colors, hair with sharp reflective highlights. Strong high-contrast cinematic lighting, bright rim light, cool blue highlights mixed with warm light, small bloom and soft glow, specular highlights. Crisp sharp line art. Modern sports anime, Blue Lock aesthetic, 8k, anime masterpiece frame. A wide cinematic establishing shot of a floodlit night football stadium. On the right side of the frame the players' tunnel exit opens onto the pitch; the Swedish national team in yellow jerseys with blue trim jogs out of the tunnel mouth onto the bright green grass. The camera holds a wide cinematic establishing angle and slowly pushes in. Crisp anime motion, natural proportions, no warping. Horizontal 16:9 widescreen.</pre></div>
+          </div>
+        </div>
+
+        <!-- 02 -->
+        <div class="show reveal" style="--ac-bg:var(--blue-bg);--ac-tx:var(--blue-tx)">
+          <div class="vid"><video src="clip-02-kickoff-wide.mp4" poster="poster-02.jpg" muted loop playsinline preload="none"></video><div class="vph" style="display:none">Klipp 02</div></div>
+          <div class="show-body">
+            <span class="show-tag">Klipp 02 · Avspark</span>
+            <h4>Avsparken i vidbild</h4>
+            <div class="show-sub">Hela planen och läktaren. Animerad från en bred startbild så kameran har geografi att åka i.</div>
+            <div class="prompt"><div class="prompt-bar"><span class="lbl">Prompt</span><button class="prompt-copy" type="button">Kopiera</button></div><pre>Classic anime cel-shading: flat saturated base colors with one hard shadow layer and one deeper shadow, crisp clean highlights, NO soft airbrushing, NO realistic rendering. Warm orange-brown skin tones, flat bold jersey colors, hair with sharp reflective highlights. Strong high-contrast cinematic lighting, bright rim light, cool blue highlights mixed with warm light, small bloom and soft glow, specular highlights. Crisp sharp line art. Modern sports anime, Blue Lock aesthetic, 8k, anime masterpiece frame. A wide, far-away cinematic shot of a floodlit night football stadium, the whole green pitch and the packed glowing stands visible, the stands full of Sweden fans waving yellow-and-blue flags. At the center circle the Swedish team in yellow kicks off, one player rolling the ball to a teammate to start play; both teams are spread across the pitch, the Swedish players in yellow and the Japan players in dark blue, small in the wide frame. Cool blue night light with warm floodlight glow, a soft electric-blue aura flickering low along the bottom edge of the frame. The camera holds a high wide angle and slowly pushes in. Crisp anime motion, natural proportions, no warping. Horizontal 16:9 widescreen.</pre></div>
+          </div>
+        </div>
+
+        <!-- 03 -->
+        <div class="show reveal" style="--ac-bg:var(--blue-bg);--ac-tx:var(--blue-tx)">
+          <div class="vid"><video src="clip-03-dribble.mp4" poster="poster-03.jpg" muted loop playsinline preload="none"></video><div class="vph" style="display:none">Klipp 03</div></div>
+          <div class="show-body">
+            <span class="show-tag">Klipp 03 · Mittfält</span>
+            <h4>Nummer 3 driver bollen och tappar den</h4>
+            <div class="show-sub">@image1 som referens. En tydlig sekvens: driva, bli av med bollen, Japan vinner den.</div>
+            <div class="prompt"><div class="prompt-bar"><span class="lbl">Prompt</span><button class="prompt-copy" type="button">Kopiera</button></div><pre>Classic anime cel-shading: flat saturated base colors with one hard shadow layer and one deeper shadow, crisp clean highlights, NO soft airbrushing, NO realistic rendering. Warm orange-brown skin tones, flat bold jersey colors, hair with sharp reflective highlights. Strong high-contrast cinematic lighting, bright rim light, cool blue highlights mixed with warm light, small bloom and soft glow, specular highlights. Highly expressive face: detailed eyes with bright catchlights and subtle iris gradients, thick eyebrows, intense exaggerated expression, crisp sharp line art. Modern sports anime, Blue Lock aesthetic, 8k, anime masterpiece frame. A Swedish player in a yellow Sweden jersey with blue trim, matching reference @image1, is dribbling the ball forward on a floodlit night pitch. A Japan player in a dark blue kit, seen from behind with his face not visible, moves across and takes the ball cleanly off him, then passes it sideways to another Japan player in a dark blue kit, also faceless and seen from behind. The camera follows the ball the whole time, from the Swedish player to the first Japan player winning it to the pass. Cool blue night light, realistic kits, no glowing aura. Crisp anime motion, one clear readable sequence, natural proportions, no warping. Horizontal 16:9 widescreen.</pre></div>
+          </div>
+        </div>
+
+        <!-- 04 -->
+        <div class="show reveal" style="--ac-bg:var(--red-bg);--ac-tx:var(--red-tx)">
+          <div class="vid"><video src="clip-04-japan-scores.mp4" poster="poster-04.jpg" muted loop playsinline preload="none"></video><div class="vph" style="display:none">Klipp 04</div></div>
+          <div class="show-body">
+            <span class="show-tag">Klipp 04 · Japan</span>
+            <h4>Japan gör mål</h4>
+            <div class="show-sub">Lågpunkten. Värmen dräneras ur bilden, grå aska, tystnad. Ingen aura.</div>
+            <div class="prompt"><div class="prompt-bar"><span class="lbl">Prompt</span><button class="prompt-copy" type="button">Kopiera</button></div><pre>Classic anime cel-shading: flat saturated base colors with one hard shadow layer and one deeper shadow, crisp clean highlights, NO soft airbrushing, NO realistic rendering. Warm orange-brown skin tones, flat bold jersey colors, hair with sharp reflective highlights. Strong high-contrast cinematic lighting, bright rim light, cool blue highlights mixed with warm light, small bloom and soft glow, specular highlights. Crisp sharp line art. Modern sports anime, Blue Lock aesthetic, 8k, anime masterpiece frame. A floodlit night football stadium, packed glowing stands behind. A Japanese attacker in a dark blue Japan kit runs forward and drives past a Swedish defender in the yellow-and-blue Sweden kit, then faces the goal and strikes the ball low into the net past the diving Sweden goalkeeper in yellow. The camera tracks the Japanese attacker from the side as he beats the defender and shoots, then follows the ball into the net as it ripples. Cold blue stadium light, the warmth draining from the frame, faint grey ash drifting, a hush falling over the crowd. Crisp anime motion, one clear readable action, natural proportions, no warping. Horizontal 16:9 widescreen.</pre></div>
+          </div>
+        </div>
+
+        <!-- 05 -->
+        <div class="show reveal" style="--ac-bg:var(--blue-bg);--ac-tx:var(--blue-tx)">
+          <div class="vid"><video src="clip-05-isak-mad.mp4" poster="poster-05.jpg" muted loop playsinline preload="none"></video><div class="vph" style="display:none">Klipp 05</div></div>
+          <div class="show-body">
+            <span class="show-tag">Klipp 05 · Reaktion</span>
+            <h4>Isak tänder till</h4>
+            <div class="show-sub">Närbild, full stilblock med ansiktsraden. Kall blå ilska, frost. "No spectral creature" håller auran låg.</div>
+            <div class="prompt"><div class="prompt-bar"><span class="lbl">Prompt</span><button class="prompt-copy" type="button">Kopiera</button></div><pre>Classic anime cel-shading: flat saturated base colors with one hard shadow layer and one deeper shadow, crisp clean highlights, NO soft airbrushing, NO realistic rendering. Warm orange-brown skin tones, flat bold jersey colors, hair with sharp reflective highlights. Strong high-contrast cinematic lighting, bright rim light, cool blue highlights mixed with warm light, small bloom and soft glow, specular highlights. Highly expressive face: detailed eyes with bright catchlights and subtle iris gradients, thick eyebrows, intense exaggerated expression, crisp sharp line art. Modern sports anime, Blue Lock aesthetic, 8k, anime masterpiece frame. @Isak, the Swedish striker in a yellow Sweden jersey number 9 with blue trim, stands on a floodlit night pitch. His head drops for a beat, then snaps up as his jaw clenches and his eyes narrow into a hard furious glare; a low dark-blue frustrated aura flickers around his clenched fists, frost cracking sharply at his feet. The camera slowly pushes in on his face. Cold blue rim light, no warm tones. Crisp anime motion, keep his face and kit consistent, natural proportions, no warping. No spectral creature. Horizontal 16:9 widescreen.</pre></div>
+          </div>
+        </div>
+
+        <!-- 06 -->
+        <div class="show reveal" style="--ac-bg:var(--blue-bg);--ac-tx:var(--blue-tx)">
+          <div class="vid"><video src="clip-06-player3-mad.mp4" poster="poster-06.jpg" muted loop playsinline preload="none"></video><div class="vph" style="display:none">Klipp 06</div></div>
+          <div class="show-body">
+            <span class="show-tag">Klipp 06 · Reaktion</span>
+            <h4>Nummer 3 tänder till</h4>
+            <div class="show-sub">Samma reaktionsmall, egen värld: runsten-aura i grått som tänds. Notera tröjnummer som handtag (@swe3).</div>
+            <div class="prompt"><div class="prompt-bar"><span class="lbl">Prompt</span><button class="prompt-copy" type="button">Kopiera</button></div><pre>Classic anime cel-shading: flat saturated base colors with one hard shadow layer and one deeper shadow, crisp clean highlights, NO soft airbrushing, NO realistic rendering. Warm orange-brown skin tones, flat bold jersey colors, hair with sharp reflective highlights. Strong high-contrast cinematic lighting, bright rim light, cool blue highlights mixed with warm light, small bloom and soft glow, specular highlights. Highly expressive face: detailed eyes with bright catchlights and subtle iris gradients, thick eyebrows, intense exaggerated expression, crisp sharp line art. Modern sports anime, Blue Lock aesthetic, 8k, anime masterpiece frame. @swe3, the Swedish defender in a yellow Sweden jersey number 3 with blue trim, stands on the floodlit night pitch, head bowed for a moment, then he lifts his chin with a hard determined scowl and clenches a fist; his runestone aura flares back from cold grey to a sharp glowing edge. The camera drifts slowly in on him. Muted grey-blue grade warming at the edges. Crisp anime motion, keep his face and kit consistent, natural proportions, no warping. No spectral creature. Horizontal 16:9 widescreen.</pre></div>
+          </div>
+        </div>
+
+        <!-- 07 -->
+        <div class="show reveal" style="--ac-bg:var(--cloth-bg);--ac-tx:var(--cloth-tx)">
+          <div class="vid"><video src="clip-07-elanga-mad.mp4" poster="poster-07.jpg" muted loop playsinline preload="none"></video><div class="vph" style="display:none">Klipp 07</div></div>
+          <div class="show-body">
+            <span class="show-tag">Klipp 07 · Reaktion</span>
+            <h4>Elanga tänder till</h4>
+            <div class="show-sub">Samma mall, hans värld: smält guld och glöd. Tre olika auror så de inte ser likadana ut.</div>
+            <div class="prompt"><div class="prompt-bar"><span class="lbl">Prompt</span><button class="prompt-copy" type="button">Kopiera</button></div><pre>Classic anime cel-shading: flat saturated base colors with one hard shadow layer and one deeper shadow, crisp clean highlights, NO soft airbrushing, NO realistic rendering. Warm orange-brown skin tones, flat bold jersey colors, hair with sharp reflective highlights. Strong high-contrast cinematic lighting, bright rim light, cool blue highlights mixed with warm light, small bloom and soft glow, specular highlights. Highly expressive face: detailed eyes with bright catchlights and subtle iris gradients, thick eyebrows, intense exaggerated expression, crisp sharp line art. Modern sports anime, Blue Lock aesthetic, 8k, anime masterpiece frame. @swe11, the Swedish winger in a yellow Sweden jersey number 11 with blue trim, stands on the floodlit night pitch, head bowed for a moment, then he lifts his chin with a fierce, determined expression, eyes burning with resolve, his whole body tensing as a molten-gold ember aura flares to life around him, warm orange sparks rising. The camera drifts slowly in on him. Deep night-blue grade warming to gold at the edges. Crisp anime motion, keep his face and kit consistent, natural proportions, no warping. No spectral creature. Horizontal 16:9 widescreen.</pre></div>
+          </div>
+        </div>
+
+        <!-- 08 -->
+        <div class="show reveal" style="--ac-bg:var(--green-bg);--ac-tx:var(--green-tx)">
+          <div class="vid"><video src="clip-08-kickoff-pass.mp4" poster="poster-08.jpg" muted loop playsinline preload="none"></video><div class="vph" style="display:none">Klipp 08</div></div>
+          <div class="show-body">
+            <span class="show-tag">Klipp 08 · Omstart</span>
+            <h4>Avsparkspasset</h4>
+            <div class="show-sub">Tight lågvinkel på bollen, passning till @swe17 som tittar upp. Lugnt klipp, minimal aura.</div>
+            <div class="prompt"><div class="prompt-bar"><span class="lbl">Prompt</span><button class="prompt-copy" type="button">Kopiera</button></div><pre>Classic anime cel-shading: flat saturated base colors with one hard shadow layer and one deeper shadow, crisp clean highlights, NO soft airbrushing, NO realistic rendering. Warm orange-brown skin tones, flat bold jersey colors, hair with sharp reflective highlights. Strong high-contrast cinematic lighting, bright rim light, cool blue highlights mixed with warm light, small bloom and soft glow, specular highlights. Crisp sharp line art. Modern sports anime, Blue Lock aesthetic, 8k, anime masterpiece frame. A floodlit night football stadium at kickoff, packed glowing stands behind. Tight low angle on the ball resting on the center spot; a Swedish player's boot in a yellow-and-blue kit steps in and passes the ball to @swe17, who receives it and brings it under control. Number 17 then lifts his head and looks around and up across the field, searching for a teammate to pass to, but holds onto the ball without passing. The camera stays low, following the ball to number 17, then rises slightly to settle on him as he looks up. Cool blue night light with warm floodlight glow and faint bloom, a soft electric-blue aura flickering low along the bottom edge of the frame. Smooth crisp anime motion, no warping. Horizontal 16:9 widescreen.</pre></div>
+          </div>
+        </div>
+
+        <!-- 09 -->
+        <div class="show reveal" style="--ac-bg:var(--cloth-bg);--ac-tx:var(--cloth-tx)">
+          <div class="vid"><video src="clip-09-pass-to-elanga.mp4" poster="poster-09.jpg" muted loop playsinline preload="none"></video><div class="vph" style="display:none">Klipp 09</div></div>
+          <div class="show-body">
+            <span class="show-tag">Klipp 09 · Uppbyggnad</span>
+            <h4>Passet till Elanga</h4>
+            <div class="show-sub">@swe17 till @swe11. Två spelare skarpa, allt annat suddigt. Första glöden börjar.</div>
+            <div class="prompt"><div class="prompt-bar"><span class="lbl">Prompt</span><button class="prompt-copy" type="button">Kopiera</button></div><pre>Classic anime cel-shading: flat saturated base colors with one hard shadow layer and one deeper shadow, crisp clean highlights, NO soft airbrushing, NO realistic rendering. Warm orange-brown skin tones, flat bold jersey colors, hair with sharp reflective highlights. Strong high-contrast cinematic lighting, bright rim light, cool blue highlights mixed with warm light, small bloom and soft glow, specular highlights. Highly expressive face: detailed eyes with bright catchlights and subtle iris gradients, thick eyebrows, intense exaggerated expression, crisp sharp line art. Modern sports anime, Blue Lock aesthetic, 8k, anime masterpiece frame. @swe17, a Swedish player in a yellow Sweden jersey number 17 with blue trim, plays a pass across the floodlit night pitch to @swe11, a Swedish winger in a yellow Sweden jersey number 11 with blue trim, on the right side just outside the box. Dark blue Japan opponents are spread around them across the pitch, blurred and out of focus in the background, and the packed stands behind are full of Sweden fans waving yellow-and-blue flags and cheering. @swe11 controls the ball at his feet and looks up toward the goal, a first thin trail of golden embers stirring around him. The camera follows the ball from @swe17 to @swe11, then settles on @swe11 as he takes the ball. The two Swedish players stay sharp and in focus, everything else soft. Deep night-blue background with warm gold rim light. Crisp anime motion, one clear readable pass, natural proportions, no warping. Horizontal 16:9 widescreen.</pre></div>
+          </div>
+        </div>
+
+        <!-- 10 -->
+        <div class="show reveal" style="--ac-bg:var(--cloth-bg);--ac-tx:var(--cloth-tx)">
+          <div class="vid"><video src="clip-10-elanga-scores.mp4" poster="poster-10.jpg" muted loop playsinline preload="none"></video><div class="vph" style="display:none">Klipp 10</div></div>
+          <div class="show-body">
+            <span class="show-tag">Klipp 10 · Målet</span>
+            <h4>Elanga avgör — hjälteskottet</h4>
+            <div class="show-sub">Full aura sparad till hit. Vikingaanden reser sig i träffögonblicket, kameran sveper bakom ryggen. Det här är klippet allt byggde mot.</div>
+            <div class="prompt"><div class="prompt-bar"><span class="lbl">Prompt</span><button class="prompt-copy" type="button">Kopiera</button></div><pre>Classic anime cel-shading: flat saturated base colors with one hard shadow layer and one deeper shadow, crisp clean highlights, NO soft airbrushing, NO realistic rendering. Warm orange-brown skin tones, flat bold jersey colors, hair with sharp reflective highlights. Strong high-contrast cinematic lighting, bright rim light, cool blue highlights mixed with warm light, small bloom and soft glow, specular highlights. Highly expressive face: detailed eyes with bright catchlights and subtle iris gradients, thick eyebrows, intense exaggerated expression, crisp sharp line art. Modern sports anime, Blue Lock aesthetic, 8k, anime masterpiece frame. The Swedish winger in a yellow Sweden jersey number 11 with blue trim is just outside the box on the right side of a floodlit night pitch with the ball in front of him. He takes one strong planted step and strikes a powerful curling shot with his left foot, full follow-through. The instant his boot connects, a massive spectral Viking warrior spirit wreathed in golden flame and embers rises behind him, sparks scattering, his eyes blazing. The camera holds a low hero angle with a fast bullet-time snap on the moment of contact, then sweeps around to directly behind him, over his shoulder, looking out toward the goal. From this behind-the-back view the ball flies away from him in one clean arc into the top corner of the net past the diving Japan goalkeeper in a dark blue kit. Anime speed lines, motion blur and heavy gold bloom, deep night-blue sky with molten-gold and ember-orange light flaring across the frame. Keep his face and kit consistent, natural proportions, no warping. Horizontal 16:9 widescreen.</pre></div>
+          </div>
+        </div>
+
+        <!-- 11 -->
+        <div class="show reveal" style="--ac-bg:var(--cloth-bg);--ac-tx:var(--cloth-tx)">
+          <div class="vid"><video src="clip-11-celebration.mp4" poster="poster-11.jpg" muted loop playsinline preload="none"></video><div class="vph" style="display:none">Klipp 11</div></div>
+          <div class="show-body">
+            <span class="show-tag">Klipp 11 · Final</span>
+            <h4>Elanga firar</h4>
+            <div class="show-sub">Laget rusar in (team-referenserna), anden blir norrsken över ett vikingaskepp. Whip-pan, sen utzoom.</div>
+            <div class="prompt"><div class="prompt-bar"><span class="lbl">Prompt</span><button class="prompt-copy" type="button">Kopiera</button></div><pre>Classic anime cel-shading: flat saturated base colors with one hard shadow layer and one deeper shadow, crisp clean highlights, NO soft airbrushing, NO realistic rendering. Warm orange-brown skin tones, flat bold jersey colors, hair with sharp reflective highlights. Strong high-contrast cinematic lighting, bright rim light, cool blue highlights mixed with warm light, small bloom and soft glow, specular highlights. Highly expressive face: detailed eyes with bright catchlights and subtle iris gradients, thick eyebrows, intense exaggerated expression, crisp sharp line art. Modern sports anime, Blue Lock aesthetic, 8k, anime masterpiece frame. @image1, the goalscorer in a yellow Sweden jersey number 11 with blue trim, wheels away roaring with both arms spread wide, mouth open in a fierce shout, eyes alight. Four Swedish teammates in yellow jerseys, matching the saved team-photo references, sprint in from the edges and pile around him with arms raised, faces lit with joy, celebrating together. Behind them the golden Viking warrior spirit from the strike breaks apart into a green-teal aurora over a faint Viking longship silhouette, embers still drifting. The camera whip-pans onto the goalscorer's roar, then pulls back to take in the whole group, heavy bloom. Keep every face and kit consistent with the references, natural proportions, no warping. Horizontal 16:9 widescreen.</pre></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- RULES -->
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2>Reglerna som gjorde skillnad</h2>
+        <div class="sec-sub">Det här är skillnaden mellan klipp som warpar och klipp som ser proffsiga ut.</div>
+      </div>
+      <div class="tips">
+        <div class="tipcard reveal">
+          <div class="ti" style="background:var(--blue-bg);color:var(--blue-tx)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </div>
+          <h3>Håll handlingen enkel</h3>
+          <p>"Plantera, skjut, följ igenom." <b>Akrobatiska rörelser warpar.</b> En tydlig handling per klipp ger ett rent resultat.</p>
+        </div>
+        <div class="tipcard reveal">
+          <div class="ti" style="background:var(--cloth-bg);color:var(--cloth-tx)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          </div>
+          <h3>Ge varje spelare en egen värld</h3>
+          <p>Frost och varg, storm och blixt, smält guld och eld. <b>Då ser de inte alla likadana ut</b> och varje karaktär får sin egen känsla.</p>
+        </div>
+        <div class="tipcard reveal">
+          <div class="ti" style="background:var(--yellow-bg);color:var(--yellow-tx)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>
+          </div>
+          <h3>Spara odjuret till toppen</h3>
+          <p>Den spöklika anden som brister fram är hela "Blue Lock"-looken. Men <b>spara full aura till målögonblicket</b>, minimal eller ingen aura på lugna klipp, så landar det när det väl smäller.</p>
+        </div>
+        <div class="tipcard reveal">
+          <div class="ti" style="background:var(--red-bg);color:var(--red-tx)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64A9 9 0 1 1 5.64 6.64M12 2v10"/></svg>
+          </div>
+          <h3>Undvik filterets triggerord</h3>
+          <p>Inga våldsord (fist, clench, scowl, grab, hit, attack) och inga riktiga namn på offentliga personer. Förmedla ilska genom ansiktet och energin ("eyes burning, body tensing"). Skriv <b>"warrior spirit"</b>, inte "berserker" eller "beast".</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GLANCE -->
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2>Hela arbetsflödet i en överblick</h2>
+        <div class="sec-sub">Från riktig spelare till färdigt klipp.</div>
+      </div>
+      <div class="lane reveal">
+        <div class="chain2">
+          <div class="node"><div class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div><div class="nt">Referensbild på spelaren</div></div>
+          <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+          <div class="node"><div class="ni">GPT</div><div class="nt">Karaktärsblad + beskär panel</div></div>
+          <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+          <div class="node"><div class="ni">H</div><div class="nt">Higgsfield: stilblock + scen</div></div>
+          <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+          <div class="node"><div class="ni">CC</div><div class="nt">Klipp ihop + ljud</div></div>
+          <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+          <div class="node done"><div class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><div class="nt">Färdig anime-video</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section style="padding-top:8px">
+    <div class="wrap">
+      <div class="cta reveal">
+        <h2>Vill du lära dig mer om AI?</h2>
+        <p>Jag visar hur du använder AI i ditt jobb och företag, från första frågan till färdig rutin. Skriv till mig så snackar vi.</p>
+        <a class="btn" href="https://instagram.com/joudgor">Skriv till mig på Instagram</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <div class="h">@joudgor</div>
+      <div class="p">powered by Ikapp.ai</div>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  (function(){
+    var els = document.querySelectorAll('.reveal');
+    if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in');});}
+    else{
+      var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(en){
+          if(en.isIntersecting){
+            var el = en.target;
+            var sibs = Array.prototype.slice.call(el.parentNode.children).filter(function(c){return c.classList.contains('reveal');});
+            var i = sibs.indexOf(el);
+            el.style.transitionDelay = (i>0 ? (i*80)+'ms' : '0ms');
+            el.classList.add('in');
+            io.unobserve(el);
+          }
+        });
+      },{threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+      els.forEach(function(e){io.observe(e);});
+    }
+
+    // lazy play: play videos only while in view, pause when out
+    var vids = document.querySelectorAll('.vid video');
+    if('IntersectionObserver' in window){
+      var vio = new IntersectionObserver(function(entries){
+        entries.forEach(function(en){
+          var v = en.target;
+          if(en.isIntersecting){ v.play().catch(function(){}); }
+          else { try{ v.pause(); }catch(e){} }
+        });
+      },{threshold:0.45});
+      vids.forEach(function(v){ vio.observe(v); });
+    } else {
+      vids.forEach(function(v){ v.play().catch(function(){}); });
+    }
+    // if a clip is missing, show its placeholder
+    vids.forEach(function(v){
+      var ph = v.parentNode.querySelector('.vph');
+      v.addEventListener('error', function(){ v.style.display='none'; if(ph) ph.style.display='flex'; }, true);
+    });
+
+    // copy buttons
+    document.querySelectorAll('.prompt-copy').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var pre = btn.closest('.prompt').querySelector('pre');
+        var txt = pre.innerText;
+        var done = function(){ btn.textContent='Kopierad'; btn.classList.add('ok'); setTimeout(function(){ btn.textContent='Kopiera'; btn.classList.remove('ok'); },1800); };
+        if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done, function(){ fallback(txt); done(); }); }
+        else { fallback(txt); done(); }
+      });
+    });
+    function fallback(t){ var ta=document.createElement('textarea'); ta.value=t; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta); }
+  })();
+</script>
+</body>
+</html>
