@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Så gjorde jag den svenska anime-videon — hela arbetsflödet | @joudgor</title>
-<meta name="description" content="Hela arbetsflödet bakom den svenska anime-fotbollsvideon. ChatGPT för karaktärsblad, Higgsfield (Seedance 2.0) för videon, valfri editor för att klippa ihop. Med de exakta prompterna och klippen de gav. På svenska.">
+<meta name="description" content="Hela arbetsflödet bakom den svenska anime-fotbollsvideon. ChatGPT för karaktärsblad, Seedance 2.0 för videon, valfri editor för att klippa ihop. Med de exakta prompterna och klippen de gav. På svenska.">
 <meta property="og:title" content="Så gjorde jag den svenska anime-videon">
-<meta property="og:description" content="Hela arbetsflödet, de exakta prompterna och klippen de gav. ChatGPT + Higgsfield (Seedance 2.0).">
+<meta property="og:description" content="Hela arbetsflödet, de exakta prompterna och klippen de gav. ChatGPT + Seedance 2.0.">
 <meta property="og:image" content="poster-10.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -280,7 +280,7 @@
     <div class="wrap">
       <div class="eyebrow reveal">Anime Video-workflow · 2026</div>
       <h1 class="reveal">Så gjorde jag den <em>svenska anime-videon</em></h1>
-      <p class="lede reveal">Riktiga spelare blir anime-karaktärer, auran exploderar bakom dem i målögonblicket, allt i 16:9 med snabba klipp. Här är hela arbetsflödet jag faktiskt använde: <b>ChatGPT</b> för karaktärsblad, <b>Higgsfield (Seedance 2.0)</b> för videon, valfri editor för att klippa ihop. Med de exakta prompterna och klippen de gav.</p>
+      <p class="lede reveal">Riktiga spelare blir anime-karaktärer, auran exploderar bakom dem i målögonblicket, allt i 16:9 med snabba klipp. Här är hela arbetsflödet jag faktiskt använde: <b>ChatGPT</b> för karaktärsblad, <b>Seedance 2.0</b> för videon, valfri editor för att klippa ihop. Med de exakta prompterna och klippen de gav.</p>
       <div class="hero-still reveal">
         <div class="cap">Hjälteskottet · Elanga avgör</div>
         <div class="vid">
@@ -303,7 +303,7 @@
       </div>
       <div class="tools reveal">
         <div class="tool"><div class="b" style="background:#10A37F">GPT</div><span class="nm">ChatGPT (karaktärsblad)</span></div>
-        <div class="tool"><div class="b" style="background:#111111">H</div><span class="nm">Higgsfield · Seedance 2.0 (video)</span></div>
+        <div class="tool"><div class="b" style="background:#111111">SD</div><span class="nm">Seedance 2.0 (video-modell)</span></div>
         <div class="tool"><div class="b" style="background:#111111">CC</div><span class="nm">CapCut (eller valfri editor)</span></div>
       </div>
       <div class="fmt reveal">
@@ -419,7 +419,7 @@
           <div class="step-n">4</div>
           <div>
             <h4>Döp varje referens till ett neutralt namn</h4>
-            <p>Riktiga fotbollsnamn kan få videoprompten <b>nekad</b> (filtret för offentliga personer). När du laddar in en referens i Higgsfield, döp den till något neutralt som <b>swe9</b>, <b>swe11</b>, <b>swe17</b> (tröjnummer), inte "Elanga".</p>
+            <p>Riktiga fotbollsnamn kan få videoprompten <b>nekad</b> (filtret för offentliga personer). När du laddar in en referens i video-verktyget, döp den till något neutralt som <b>swe9</b>, <b>swe11</b>, <b>swe17</b> (tröjnummer), inte "Elanga".</p>
             <p>I prompten beskriver du spelaren med tröja plus nummer och taggar den neutrala handlen (eller bara <b>@image1</b>, <b>@image2</b> för generiska platser). Ansiktet låses ändå från bilden, namnet var aldrig det som bar likheten. Du ser de här taggarna i prompterna längre ner.</p>
             <div class="note red"><span class="lb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><span>Använd tröjnummer som handtag, inte spelarnamn, så slipper du att prompten blockeras.</span></div>
           </div>
@@ -430,8 +430,9 @@
     <!-- PHASE 02 -->
     <div class="phase reveal" style="--ac-bg:var(--cloth-bg);--ac-tx:var(--cloth-tx)">
       <div class="p-eyebrow">Fas 02</div>
-      <h2>Generera i Higgsfield (Seedance 2.0)</h2>
+      <h2>Generera med Seedance 2.0</h2>
       <div class="p-sub">Nu bygger du klippen. Stilblock plus scen, rätt bild i rätt slot, två-tre tagningar per beat.</div>
+      <div class="note"><span class="lb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg></span><span><b>Seedance 2.0 är modellen, inte plattformen.</b> Den finns på flera ställen, så välj den du gillar. Jag körde den via <b>Dreamina</b>, men det viktiga är modellen, inte var du öppnar den.</span></div>
 
       <div class="steps">
         <div class="step">
@@ -439,7 +440,7 @@
           <div>
             <h4>De flesta klipp: text-till-video direkt</h4>
             <p>Ladda in referensen (taggad med det neutrala handtaget) och kör text-till-video. <b>Ansiktslösa klipp</b> (avspark, bollen i nätet) behöver <b>ingen referens alls</b>, ren text-till-video räcker.</p>
-            <span class="chip-tool">Higgsfield · Seedance 2.0</span>
+            <span class="chip-tool">Seedance 2.0</span>
           </div>
         </div>
 
@@ -677,7 +678,7 @@
           <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
           <div class="node"><div class="ni">GPT</div><div class="nt">Karaktärsblad + beskär panel</div></div>
           <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
-          <div class="node"><div class="ni">H</div><div class="nt">Higgsfield: stilblock + scen</div></div>
+          <div class="node"><div class="ni">SD</div><div class="nt">Seedance 2.0: stilblock + scen</div></div>
           <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
           <div class="node"><div class="ni">CC</div><div class="nt">Klipp ihop + ljud</div></div>
           <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
