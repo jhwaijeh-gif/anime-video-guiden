@@ -431,7 +431,7 @@
     <div class="phase reveal" style="--ac-bg:var(--cloth-bg);--ac-tx:var(--cloth-tx)">
       <div class="p-eyebrow">Fas 02</div>
       <h2>Generera med Seedance 2.0</h2>
-      <div class="p-sub">Nu bygger du klippen. Stilblock plus scen, rätt bild i rätt slot, två-tre tagningar per beat.</div>
+      <div class="p-sub">Nu bygger du klippen. Stilblock plus scen, rätt referensbild taggad rätt, två-tre tagningar per beat.</div>
       <div class="note"><span class="lb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg></span><span><b>Seedance 2.0 är modellen, inte plattformen.</b> Den finns på flera ställen, så välj den du gillar. Jag körde den via <b>Dreamina</b>, men det viktiga är modellen, inte var du öppnar den.</span></div>
 
       <div class="steps">
@@ -447,9 +447,9 @@
         <div class="step">
           <div class="step-n">2</div>
           <div>
-            <h4>För en stor kamerareveal: börja från en bredbild</h4>
-            <p>En kamera kan inte krana ut från en tight närbild och hitta på ett helt stadion (då hamnar spelartunneln mitt på planen). Generera en <b>bred bild först</b> som redan har hela geografin, och animera sen den.</p>
-            <div class="note red"><span class="lb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><span>Start-frame vs referens-slot: animerar du en scenbild, lägg den i <b>start-frame-sloten</b>, inte referens-sloten. Sloten står som standard på "referens", vilket får modellen att hitta på en ny scen. Referens-slot = bara identitet och ansikten.</span></div>
+            <h4>Alla bilder laddas in som referensbilder</h4>
+            <p>Jag använde varje karaktärsblad (den beskurna figuren) som en <b>referensbild</b>, inte som en startbild. Du laddar in bilden i referens-läget och låter prompten styra hela scenen.</p>
+            <div class="note"><span class="lb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg></span><span><b>@-taggen i prompten ÄR referensbilden.</b> När du skriver <b>@swe11</b> eller <b>@image1</b> pekar du på den referensbild (karaktärsbladet) du laddat in och döpt. Det är så modellen vet vems ansikte och kropp den ska sätta in. Alltså: ladda in bilden, ge den ett handtag, och använd exakt samma handtag med @ i prompten där spelaren ska vara.</span></div>
           </div>
         </div>
 
@@ -517,7 +517,7 @@
           <div class="show-body">
             <span class="show-tag">Klipp 02 · Avspark</span>
             <h4>Avsparken i vidbild</h4>
-            <div class="show-sub">Hela planen och läktaren. Animerad från en bred startbild så kameran har geografi att åka i.</div>
+            <div class="show-sub">Hela planen och läktaren. Ren text-till-video i vidvinkel, ingen referensbild behövs på en sån här bred bild.</div>
             <div class="prompt"><div class="prompt-bar"><span class="lbl">Prompt</span><button class="prompt-copy" type="button">Kopiera</button></div><pre>Classic anime cel-shading: flat saturated base colors with one hard shadow layer and one deeper shadow, crisp clean highlights, NO soft airbrushing, NO realistic rendering. Warm orange-brown skin tones, flat bold jersey colors, hair with sharp reflective highlights. Strong high-contrast cinematic lighting, bright rim light, cool blue highlights mixed with warm light, small bloom and soft glow, specular highlights. Crisp sharp line art. Modern sports anime, Blue Lock aesthetic, 8k, anime masterpiece frame. A wide, far-away cinematic shot of a floodlit night football stadium, the whole green pitch and the packed glowing stands visible, the stands full of Sweden fans waving yellow-and-blue flags. At the center circle the Swedish team in yellow kicks off, one player rolling the ball to a teammate to start play; both teams are spread across the pitch, the Swedish players in yellow and the Japan players in dark blue, small in the wide frame. Cool blue night light with warm floodlight glow, a soft electric-blue aura flickering low along the bottom edge of the frame. The camera holds a high wide angle and slowly pushes in. Crisp anime motion, natural proportions, no warping. Horizontal 16:9 widescreen.</pre></div>
           </div>
         </div>
